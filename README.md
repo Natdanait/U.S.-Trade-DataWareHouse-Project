@@ -1,4 +1,4 @@
-# U.S. Trade Data Warehouse Project
+# U.S. Trade Data Warehouse and Viuslaizations Project
 
 This project is part of the **U.S. Trade Landscape Reports**, which requires a complete **ETL (Extract, Transform, Load)** process design and **data visualization pipeline** to support trade policy analysis and reporting.
 
