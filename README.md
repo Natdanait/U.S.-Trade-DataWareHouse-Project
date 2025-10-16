@@ -34,20 +34,27 @@ The Power BI dashboard is designed to help analysts and policymakers explore bot
 It supports two levels of analysis: **basic trade monitoring** and **advanced policy evaluation**.
 
 ### 🧩 1. Basic Trade Analysis
-- **Overall Trade Trends** – Track imports, exports, and trade balance by month or YTD.  
-- **Top Trading Partners** – Identify leading source and destination countries.  
-- **Commodity Composition** – Analyze trade by HS2/HS4 product groups.  
-- **Country–Product Matrix** – Explore major traded products by partner country.  
 
-> 📊 *These insights establish a clear picture of the U.S. trade structure and performance.*
+For exporting countries, this section provides a clear overview of how the U.S. import market evolves over time — helping exporters and trade agencies understand demand trends, key partners, and major product categories.
+
+- **U.S. Import Landscape Overview** – Track the overall value and growth of U.S. imports by month, year, or YTD period to monitor market demand trends.  
+- **Top Import Partners** – Identify which countries are the leading suppliers to the U.S. and how their trade shares change over time.  
+- **Country-Level Import Insight** – Analyze U.S. import patterns by country, including product composition and historical trends, to benchmark export competitiveness.  
+- **Monthly Trade Shifts** – Monitor short-term fluctuations and emerging product trends in U.S. imports by partner country.
+
+> 📊 *These insights help exporting countries understand the structure of U.S. import demand and identify key opportunities to strengthen their trade position in the U.S. market.*
 
 ### 🌍 2. Advanced Policy & Segmented Analysis
-With additional segmentation—**agricultural commodities (HS 01–23 & 40)**, **reciprocal tariff lists**, and **Section 232 coverage**—the dashboard provides deeper policy insights:
-- **Agricultural Trade Focus** – Compare agricultural vs non-agricultural sectors.  
-- **Reciprocal Tariff Evaluation** – Track trade of products under reciprocal tariff lists (Annex II & III).  
-- **Section 232 Monitoring** – Measure import exposure and country-level impacts.  
-- **Negotiation Scenarios** – Analyze products moved from exclusion to negotiation lists.  
 
+For exporting countries and trade promotion agencies, this dashboard provides an analytical view of how U.S. import demand and trade policies affect market access and export performance.  
+By applying segmentation filters—such as **agricultural commodities (HS 01–23 & 40)**, **reciprocal tariff product lists**, and **Section 232 coverage**—users can assess how U.S. policy measures influence their exports and identify areas of opportunity or risk.
+
+- **Agricultural Trade Focus** – Understand U.S. import demand for agricultural and food products, identify top suppliers by category, and evaluate where your country’s exports are positioned within the U.S. market.  
+- **Reciprocal Tariff Evaluation** – Examine how the new *Reciprocal Tariff Policy* impacts your export products—whether they are included, excluded, or negotiable—and monitor changes in U.S. import values accordingly.  
+- **Section 232 Monitoring** – Assess the impact of Section 232 measures on iron, steel, and aluminum products exported to the U.S., and identify which sectors or exporters are most affected.  
+- **Negotiation Scenarios** – Track products moving from *Annex II (excluded)* to *Annex III (negotiable)* lists to explore potential negotiation opportunities and tariff adjustments that may benefit your country’s exports.
+
+> 🌐 *This perspective allows exporting countries to understand how U.S. trade policies shape import patterns and to develop strategies that maintain or expand market share in the U.S.*
 > 🧠 *These advanced insights support data-driven decision-making and trade policy evaluation.*
 
 ---
