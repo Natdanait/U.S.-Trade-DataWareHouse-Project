@@ -60,7 +60,7 @@ Together, these features form a **scalable and modular architecture** that grows
 
 ### 🗺️ Data Pipeline Overview
 
-![Data Pipeline](diagrams/Data%20pipeline%20Diagram.drawio.png)
+![Data Pipeline](Diagrams/Data%20pipeline%20Diagram.drawio.png)
 
 **Flow Summary**
 
