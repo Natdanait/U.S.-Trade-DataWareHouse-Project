@@ -1,4 +1,4 @@
-# 🇺🇸 U.S. Trade Data Architecture & Analytics
+# U.S. Trade Data Architecture & Analytics
 
 This repository presents the **data foundation** for analyzing the international trade of the **United States**.  
 It integrates data from multiple official sources into a unified, policy-aware analytics environment — designed for trade analysts, researchers, and policymakers who need to explore trade flows, assess policy impacts, and visualize trends clearly.
