@@ -1,4 +1,4 @@
-# 🇺🇸 U.S. Trade Data Architecture & Analytics
+# U.S. Trade Data Architecture & Analytics
 
 This repository documents the **data architecture**, **pipeline**, and **analytics framework** that serve as the foundation for analyzing **international trade of the United States**.  
 The system integrates multiple data sources and tools to provide policy-driven trade insights for analysts, researchers, and policymakers.
@@ -39,7 +39,7 @@ It serves as the **core foundation for U.S. trade policy analysis**, covering:
 
 ### 🗺️ Data Pipeline Diagram
 
-![Data Pipeline Overview](diagrams/Data%20pipeline%20Diagram.drawio.png)
+![Data Pipeline Overview](Diagrams/Data pipeline Diagram.drawio.png)
 
 **Flow Explanation:**
 1. **U.S. Census Data** is extracted and uploaded via Google Colab to **Google Cloud Storage (GCS)**.  
