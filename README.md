@@ -1,119 +1,139 @@
-# U.S. Trade Data Warehouse and Viuslaizations Project
+# 🇺🇸 U.S. Trade Data Architecture & Analytics
 
-This project is part of the **U.S. Trade Landscape Reports**, which requires a complete **ETL (Extract, Transform, Load)** process design and **data visualization pipeline** to support trade policy analysis and reporting.
-
-The ETL pipeline is designed to **automate the end-to-end flow of U.S. trade data**—from data extraction, cleaning, transformation, and storage, to final visualization.  
-Each stage ensures data accuracy, scalability, and efficiency in updating multi-year import and export datasets.
-
-The dataset is retrieved from the [International Trade Data – U.S. Census Bureau](https://www.census.gov/foreign-trade/data/index.html), covering monthly **import and export statistics** (value and quantity) under the **Harmonized Tariff Schedule (HTS)** classification system.
+This repository documents the **data architecture**, **pipeline**, and **analytics framework** that serve as the foundation for analyzing **international trade of the United States**.  
+The system integrates multiple data sources and tools to provide policy-driven trade insights for analysts, researchers, and policymakers.
 
 ---
 
-## 🏗️ Project Architecture Overview
+## 🌍 Project Overview
 
-The pipeline integrates multiple technologies within the Google Cloud ecosystem:
+The database consolidates **monthly U.S. trade data** (import and export values and quantities) with countries worldwide, sourced primarily from the **U.S. Census Bureau**.
 
-1. **Extract** → Retrieve raw monthly data using Python scripts in Google Colab (via U.S. Census API).  
-2. **Transform** → Clean, structure, and join data in **BigQuery**, combining fact and dimension tables.  
-3. **Load** → Store processed datasets in optimized tables ready for analysis.  
-4. **Visualize** → Build interactive dashboards in **Power BI** with dynamic filters (HS2–HS10, country, and period selection).
+It serves as the **core foundation for U.S. trade policy analysis**, covering:
+- **Section 232 Tariffs** (Iron, Steel, Aluminum, Vehicles)
+- **Reciprocal Tariff Frameworks** (Annex II & III)
+- **Critical Minerals and Agricultural Commodities** (HS 01–23 & 40)
 
-This workflow allows analysts to quickly identify trends, track YTD performance, and evaluate the impact of tariff policies such as Section 232 and Reciprocal Tariffs.
-
----
-
-## 📊 Data Pipeline Diagram
-![Data Pipeline](Diagrams/Data%20pipeline%20Diagram.drawio.png)
-*Figure 1: End-to-End U.S. Trade Data Pipeline*
-
----
-
-## 🎯 Dashboard Objectives & Insights
-
-The Power BI dashboard is designed to help analysts and policymakers explore both **fundamental trade patterns** and **policy-specific insights** using U.S. import and export data from the U.S. Census Bureau.  
-It supports two levels of analysis: **basic trade monitoring** and **advanced policy evaluation**.
-
-### 🧩 1. Basic Trade Analysis
-
-For exporting countries, this section provides a clear overview of how the U.S. import market evolves over time — helping exporters and trade agencies understand demand trends, key partners, and major product categories.
-
-- **U.S. Import Landscape Overview** – Track the overall value and growth of U.S. imports by month, year, or YTD period to monitor market demand trends.  
-- **Top Import Partners** – Identify which countries are the leading suppliers to the U.S. and how their trade shares change over time.  
-- **Country-Level Import Insight** – Analyze U.S. import patterns by country, including product composition and historical trends, to benchmark export competitiveness.  
-- **Monthly Trade Shifts** – Monitor short-term fluctuations and emerging product trends in U.S. imports by partner country.
-
-> 📊 *These insights help exporting countries understand the structure of U.S. import demand and identify key opportunities to strengthen their trade position in the U.S. market.*
-
-### 🌍 2. Advanced Policy & Segmented Analysis
-
-For exporting countries and trade promotion agencies, this dashboard provides an analytical view of how U.S. import demand and trade policies affect market access and export performance.  
-By applying segmentation filters—such as **agricultural commodities (HS 01–23 & 40)**, **reciprocal tariff product lists**, and **Section 232 coverage**—users can assess how U.S. policy measures influence their exports and identify areas of opportunity or risk.
-
-- **Agricultural Trade Focus** – Understand U.S. import demand for agricultural and food products, identify top suppliers by category, and evaluate where your country’s exports are positioned within the U.S. market.  
-- **Reciprocal Tariff Evaluation** – Examine how the new *Reciprocal Tariff Policy* impacts your export products—whether they are included, excluded, or negotiable—and monitor changes in U.S. import values accordingly.  
-- **Section 232 Monitoring** – Assess the impact of Section 232 measures on iron, steel, and aluminum products exported to the U.S., and identify which sectors or exporters are most affected.  
-- **Negotiation Scenarios** – Track products moving from *Annex II (excluded)* to *Annex III (negotiable)* lists to explore potential negotiation opportunities and tariff adjustments that may benefit your country’s exports.
-
-> 🌐 *This perspective allows exporting countries to understand how U.S. trade policies shape import patterns and to develop strategies that maintain or expand market share in the U.S.*
-> 🧠 *These advanced insights support data-driven decision-making and trade policy evaluation.*
+### Key Features
+- Multi-level **HTS hierarchy** (10 → 8 → 6 → 4 → 2 digits)
+- Monthly and Year-to-Date (YTD) analysis
+- Integration with **policy filter tables** (Section 232, Reciprocal, etc.)
+- Supports **trend, policy impact, and partner analysis**
+- Built for **international trade analysts and economic researchers**
 
 ---
 
-## 🧱 Data Model & Table Relationship
+## 🧭 Data Journey
 
-The data warehouse follows a **star-schema** model built in **Google BigQuery**, combining fact and dimension tables to support both detailed and aggregated analysis.
+> 🔗 See [`docs/01_data_journey.md`](docs/01_data_journey.md)
 
-### 🗂️ Core Fact Tables
-| Table | Description | Granularity |
-|--------|--------------|--------------|
-| `import.fact_imp_val2` | Monthly import value | Year–Month–Country–HTS10 |
-| `import.fact_imp_qty` | Monthly import quantity | Year–Month–Country–HTS10 |
-| `export.fact_exp_val` *(optional)* | Monthly export value | Year–Month–Country–HTS10 |
-
-### 🧭 Dimension & Bridge Tables
-| Table | Description |
-|--------|--------------|
-| `Dimension_Table.dim_hts10` | HTS 10-digit reference (with hierarchy 2–4–6–8–10). |
-| `Dimension_Table.dim_hts_all` | Aggregated HTS levels for Power BI slicers. |
-| `Dimension_Table.dim_country` | Country reference (name, ISO, region). |
-| `Dimension_sec232.bridge_sec232` | Section 232 product–HTS linkage. |
-| `Dimension_sec232.bridge_reciprocal` | Reciprocal tariff product linkage (Annex II & III). |
-
-### 🔗 Relationship Overview
+| Stage | Description |
+|-------|--------------|
+| **1. Data Source** | Monthly import/export data from the **U.S. Census Bureau** |
+| **2. Data Ingestion** | Data extracted via **Google Colab** and uploaded to **Google Cloud Storage (GCS)** |
+| **3. Storage Layer** | Raw parquet files organized by year and trade type |
+| **4. Data Warehouse (BigQuery)** | ETL process converts raw → clean → fact & dimension tables |
+| **5. BI Layer (Power BI)** | Build semantic models, DAX measures, and dashboards for policy analysis |
 
 ---
 
-## 🔄 Data Refresh & Automation
+### 🗺️ Data Pipeline Diagram
 
-| Step | Tool | Description |
-|------|------|--------------|
-| **1. Data Extraction** | Google Colab / Python | Fetch latest monthly import/export data via U.S. Census API. |
-| **2. Upload to GCS** | Google Cloud Storage | Store raw `.parquet` files organized by year. |
-| **3. Load to BigQuery** | BigQuery Staging | Append new data to staging tables. |
-| **4. Transform & Clean** | SQL Queries | Standardize fields, join with HTS dimensions. |
-| **5. Visualization Update** | Power BI Service | Refresh datasets and update dashboards. |
+![Data Pipeline Overview](diagrams/Data%20pipeline%20Diagram.drawio.png)
 
-> ⚙️ *Process runs monthly, ensuring near real-time trade insights.*
+**Flow Explanation:**
+1. **U.S. Census Data** is extracted and uploaded via Google Colab to **Google Cloud Storage (GCS)**.  
+2. **GCS** stores raw monthly files (parquet format) for imports and exports (value and quantity).  
+3. **BigQuery** ingests data from GCS into staging datasets, performs ETL transformations, and creates fact/dimension tables.  
+4. **Power BI** connects to BigQuery for visualization, using DAX and filters to analyze trade policies (Section 232, Reciprocal, etc.).
 
 ---
 
-## 🧩 Core Technologies
+## 🧱 Database Architecture
 
-| Layer | Tool | Function |
-|--------|------|-----------|
-| **Extraction** | Python (Colab) | Retrieve trade data |
-| **Storage** | Google Cloud Storage | Store raw Parquet files |
-| **Warehouse** | BigQuery | Transform & host clean datasets |
-| **Visualization** | Power BI | Interactive dashboards |
+> 🔗 See [`docs/02_database_architecture.md`](docs/02_database_architecture.md)
+
+**Core Components**
+- **Google BigQuery** – Main data warehouse for trade analysis  
+- **MySQL (Local)** – Sandbox for testing and smaller datasets  
+- **Python ETL (Colab/Composer)** – Automated extraction and transformation scripts  
+- **Power BI Service** – Interactive dashboards and reporting layer  
+
+**Key Datasets**
+| Dataset | Description |
+|----------|--------------|
+| `import.fact_imp_val2` | Monthly import value |
+| `export.fact_exp_val2` | Monthly export value |
+| `Dimension_Table.dim_hts10` | HTS classification (10-digit) |
+| `Dimension_sec232.bridge_sec232` | Bridge for Section 232 product coverage |
+| `Dimension_reciprocal.bridge_reciprocal` | Bridge for Reciprocal tariff mapping |
+
+---
+
+## 🔐 Data Access & Governance
+
+> 🔗 See [`docs/03_data_access.md`](docs/03_data_access.md)
+
+- Managed via **Google Cloud IAM Roles** (`BigQuery Data Viewer`, `Data Editor`, etc.)  
+- Access separated between **Staging**, **Production**, and **Analytics** environments  
+- Credentials handled via **service accounts** (no personal tokens)  
+- Version control and schema tracking through **GitHub repository commits**  
+
+---
+
+## 🧾 Data Dictionary
+
+> 🔗 See [`docs/04_data_dictionary.md`](docs/04_data_dictionary.md)
+
+| Field | Description | Type | Source |
+|-------|--------------|------|--------|
+| `HTS10` | Harmonized Tariff Schedule 10-digit code | STRING | USITC |
+| `Country` | Partner country | STRING | U.S. Census |
+| `Year` / `Month` | Trade period | INTEGER | U.S. Census |
+| `Imp_Value` | Import value (USD) | NUMERIC | Census |
+| `Exp_Value` | Export value (USD) | NUMERIC | Census |
+| `Section232_Flag` | Indicates product under Section 232 | BOOLEAN | Policy Dataset |
+| `Reciprocal_Flag` | Indicates product under Reciprocal Tariff | BOOLEAN | Policy Dataset |
+
+---
+
+## 🔗 Data Relationship
+
+> 🔗 See [`docs/05_data_relationship.md`](docs/05_data_relationship.md)
+
+| Relationship | Description |
+|---------------|--------------|
+| `fact_imp_val2` → `dim_hts10` | Connects trade facts to product classification |
+| `dim_hts10` → `bridge_sec232` | Links products to Section 232 coverage |
+| `bridge_sec232` → `dim_section232_category` | Categorizes products by policy segment |
+| `fact_imp_val2` → `bridge_reciprocal` | Enables analysis under reciprocal tariffs |
+
+See full ER diagram: [`diagrams/erd_bigquery_model.png`](diagrams/erd_bigquery_model.png)
+
+---
+
+## 🗓 Data Roadmap
+
+> 🔗 See [`docs/06_data_roadmap.md`](docs/06_data_roadmap.md)
+
+| Phase | Focus | Status |
+|-------|--------|--------|
+| **Phase 1** | Section 232 Integration | ✅ Completed |
+| **Phase 2** | Reciprocal Tariff (Annex II & III) | 🔄 In Progress |
+| **Phase 3** | Critical Mineral Analysis (ASEAN scope) | 🚀 Planned |
+| **Phase 4** | Predictive Trade Analytics | 🧠 Upcoming |
 
 ---
 
 ## 👤 Author
+
 **Natdanai Tapanwong**  
-Data Analyst & BI Developer  
-📧 t.natdanai@gmail.com  
-🌐 [LinkedIn](https://www.linkedin.com/in/natdanai-tapanwong-a650b077/)
+Data Analyst / Visualization Developer  
+Office of Commercial Affairs, Royal Thai Embassy (Washington D.C.)  
+📧 natdanai.tapanwong@gmail.com  
 
 ---
 
-© 2025 Natdanai Tapanwong | MIT License
+## 🪪 License
+
+This project is open-source under the [MIT License](LICENSE).
