@@ -39,7 +39,7 @@ It serves as the **core foundation for U.S. trade policy analysis**, covering:
 
 ### 🗺️ Data Pipeline Diagram
 
-![Data Pipeline Overview](Diagrams/Data pipeline Diagram.drawio.png)
+![Data Pipeline Overview](Diagrams/Data%20pipeline%20Diagram.drawio.png)
 
 **Flow Explanation:**
 1. **U.S. Census Data** is extracted and uploaded via Google Colab to **Google Cloud Storage (GCS)**.  
