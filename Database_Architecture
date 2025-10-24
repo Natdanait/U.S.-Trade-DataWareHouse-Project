@@ -1,0 +1,94 @@
+# 🧱 Database Architecture
+
+## 1️⃣ Overview
+
+The **U.S. Trade Data Warehouse Project** is designed to provide a unified and scalable data structure for analyzing U.S. international trade at multiple policy and product levels.  
+It consolidates official trade data from the **U.S. Census Bureau** and the **U.S. International Trade Commission (USITC)** into a centralized warehouse hosted on **Google BigQuery**.
+
+The core objective of this architecture is to:
+- Integrate and standardize import/export data from multiple sources.  
+- Maintain **traceability** between raw files, cleaned datasets, and analytical outputs.  
+- Support **policy-specific segmentation** through modular dimension tables (e.g., Section 232, Reciprocal Tariff).  
+- Enable **high analytical performance** for Power BI and other BI tools.  
+
+This architecture follows a **Star Schema** design — combining **Fact**, **Dimension**, and **Policy Dimension** tables —  
+allowing analysts to explore trade flows, product hierarchies, and policy impacts efficiently and consistently.
+
+---
+
+## 2️⃣ Layered Design
+
+The warehouse is organized into three main layers, ensuring data quality, traceability, and performance optimization.
+
+| Layer | Description | Example Dataset |
+|--------|--------------|----------------|
+| **Raw Layer** | Contains original data files ingested from the U.S. Census Bureau and USITC. Data stored in Google Cloud Storage (GCS) as Parquet files. | `staging.fact_imp_val_raw` |
+| **Staging Layer** | Intermediate layer used for validation, cleaning, and structure alignment before loading into analytical tables. | `staging.fact_imp_val_clean` |
+| **Warehouse Layer** | Optimized for BI and analytics. Includes fact tables, product hierarchy dimensions, and policy dimensions. | `import.fact_imp_val2`, `Dimension_Table.dim_hts_all`, `Dimension_sec232.dim_sec232_vehicle_bus` |
+
+Each layer supports **incremental updates**, ensuring efficient monthly refreshes and full traceability from raw input to analytical output.
+
+---
+
+## 3️⃣ Schema Design
+
+The database follows a **Star Schema** model designed for trade and policy analysis.  
+At its core are **Fact Tables** containing monthly import and export values by product (HTS10), country, and time period.  
+These connect to multiple **Dimension Tables** that provide descriptive and hierarchical information.
+
+---
+
+### 🔹 HTS Dictionary (Product Hierarchy Dimension)
+
+The **HTS Dictionary Table** (`dim_hts_all`) serves as the central mapping layer between the 10-digit HTS codes in the fact tables and their higher-level classifications (8-, 6-, 4-, and 2-digit).  
+It also stores the corresponding product descriptions at each level.
+
+**Purpose:**
+- Standardizes HTS structure across all datasets.  
+- Enables flexible grouping and roll-up from detailed to aggregated product levels.  
+- Acts as the **bridge key** between trade data and policy dimensions.
+
+---
+
+### 🔸 Policy Dimension Tables
+
+While originally referred to as *bridge tables*, these structures function as **policy-specific dimension tables**.  
+Each policy table lists all HTS codes affected by a specific U.S. trade measure (e.g., Section 232, Reciprocal Tariff, Critical Minerals).
+
+They are designed for **filtering and policy segmentation**, not for resolving many-to-many relationships.
+
+**Key Relationship:**
+- `fact_imp_val2.HTS10` → `dim_hts_all.HTS10` (1️⃣:1️⃣)  
+- `dim_hts_all.HTS10` → `dim_sec232.HTS10` (1️⃣:many)  
+- `dim_hts_all.HTS10` → `dim_reciprocal.HTS10` (1️⃣:many)
+
+Thus, the relationship between the fact table and each policy dimension is effectively **one-to-many**,  
+since one HTS10 can belong to one or more policy categories, but each policy entry references a single HTS code.
+
+---
+
+### 🧠 Example Policy Dimensions
+
+| Policy Dimension | Description | Key Field | Relationship Type |
+|------------------|--------------|------------|--------------------|
+| `dim_sec232_iron_steel` | Section 232 – Iron & Steel | `HTS` | 1–many from `dim_hts_all` |
+| `dim_sec232_vehicle_bus` | Section 232 – Heavy & Medium-Duty Vehicles & Buses | `HTS` | 1–many from `dim_hts_all` |
+| `dim_reciprocal_tariff` | Reciprocal Tariff (Annex II & III) | `HTS` | 1–many from `dim_hts_all` |
+| `dim_critical_minerals` | Critical Mineral List (U.S. strategy classification) | `HTS` | 1–many from `dim_hts_all` |
+
+---
+
+### 🧩 Relationship Structure (Simplified View)
+
+```mermaid
+flowchart LR
+    F["Fact_Import_Value (HTS10, Country, Year, Month, Value)"]
+    D["dim_hts_all (HTS10 → HTS8–HTS2, Descriptions)"]
+    P1["dim_sec232_iron_steel"]
+    P2["dim_sec232_vehicle_bus"]
+    P3["dim_reciprocal_tariff"]
+
+    F --> D
+    D --> P1
+    D --> P2
+    D --> P3
