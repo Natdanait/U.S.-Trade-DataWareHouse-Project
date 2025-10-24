@@ -1,93 +1,49 @@
-# 🧱 Database Architecture
+# 🧱 U.S. Trade Data Warehouse Architecture (Colab-Driven ELT)
 
-## 1️⃣ Overview
+## 1️⃣ Executive Summary & Core Objectives
 
-The **U.S. Trade Data Warehouse Project** is designed to provide a unified and scalable data structure for analyzing U.S. international trade at multiple policy and product levels.  
-It consolidates official trade data from the **U.S. Census Bureau** and the **U.S. International Trade Commission (USITC)** into a centralized warehouse hosted on **Google BigQuery**.
+This architecture establishes a scalable platform for U.S. trade analysis, leveraging official monthly data from the **U.S. Census Bureau**.  
+The entire pipeline operates within the **Google Cloud Platform (GCP)**, utilizing **Google Colaboratory** as the primary orchestration and transformation engine, with data stored and analyzed in **Google BigQuery**.
 
-The core objective of this architecture is to:
-- Integrate and standardize import/export data from multiple sources.  
-- Maintain **traceability** between raw files, cleaned datasets, and analytical outputs.  
-- Support **policy-specific segmentation** through modular dimension tables (e.g., Section 232, Reciprocal Tariff).  
-- Enable **high analytical performance** for Power BI and other BI tools.  
-
-This architecture follows a **Star Schema** design — combining **Fact**, **Dimension**, and **Policy Dimension** tables —  
-allowing analysts to explore trade flows, product hierarchies, and policy impacts efficiently and consistently.
+### Pipeline Flow
+1. **Extract (E):** Data pulled directly from Census sources within a Colab notebook.  
+2. **Load (L):** Raw data saved as Parquet files to **Google Cloud Storage (GCS)**.  
+3. **Transform (T):** Colab/Pandas/PyArrow scripts perform cleaning and staging, followed by final loading into BigQuery Fact Tables.
 
 ---
 
-## 2️⃣ Layered Design
+## 2️⃣ Layered Data Management & Colab Workflow
 
-The warehouse is organized into three main layers, ensuring data quality, traceability, and performance optimization.
+The pipeline follows a three-layered data structure, with Colab notebooks driving each transformation step.
 
-| Layer | Description | Example Dataset |
-|--------|--------------|----------------|
-| **Raw Layer** | Contains original data files ingested from the U.S. Census Bureau and USITC. Data stored in Google Cloud Storage (GCS) as Parquet files. | `staging.fact_imp_val_raw` |
-| **Staging Layer** | Intermediate layer used for validation, cleaning, and structure alignment before loading into analytical tables. | `staging.fact_imp_val_clean` |
-| **Warehouse Layer** | Optimized for BI and analytics. Includes fact tables, product hierarchy dimensions, and policy dimensions. | `import.fact_imp_val2`, `Dimension_Table.dim_hts_all`, `Dimension_sec232.dim_sec232_vehicle_bus` |
+| Layer | Storage Location | Key Process | Purpose |
+|--------|------------------|--------------|----------|
+| **Raw (Landing)** | GCS (Parquet) | Data ingestion from Census files; minimal formatting with PyArrow. | Immutable raw source backup. |
+| **Staging** | BigQuery | Colab reads from GCS, cleans, and consolidates all monthly files for a year into a staging table (e.g., `trade_import_2025`). | Year-level consolidation and validation. |
+| **Warehouse** | BigQuery | Colab joins staging data with dimensions and loads it into permanent, partitioned fact tables. | Optimized for BI queries using a Star Schema. |
 
-Each layer supports **incremental updates**, ensuring efficient monthly refreshes and full traceability from raw input to analytical output.
-
----
-
-## 3️⃣ Schema Design
-
-The database follows a **Star Schema** model designed for trade and policy analysis.  
-At its core are **Fact Tables** containing monthly import and export values by product (HTS10), country, and time period.  
-These connect to multiple **Dimension Tables** that provide descriptive and hierarchical information.
+**Key advantage:**  
+Using **PyArrow** and **Parquet** allows efficient columnar reads/writes in Colab, accelerating Load and Transform phases.
 
 ---
 
-### 🔹 HTS Dictionary (Product Hierarchy Dimension)
+## 3️⃣ Schema Design and Data Flow
 
-The **HTS Dictionary Table** (`dim_hts_all`) serves as the central mapping layer between the 10-digit HTS codes in the fact tables and their higher-level classifications (8-, 6-, 4-, and 2-digit).  
-It also stores the corresponding product descriptions at each level.
+### 🔹 HTS Dictionary Dimension (`dim_hts_all`)
 
-**Purpose:**
-- Standardizes HTS structure across all datasets.  
-- Enables flexible grouping and roll-up from detailed to aggregated product levels.  
-- Acts as the **bridge key** between trade data and policy dimensions.
+This table forms the backbone of the product hierarchy, mapping granular 10-digit HTS codes to higher-level classifications (8-, 6-, 4-, and 2-digit).  
+It acts as the **central bridge key** linking the Fact Table (trade values) to the Policy Dimension Tables (policy lists).
 
 ---
 
-### 🔸 Policy Dimension Tables
+### 🟢 Policy Dimension Tables (Filters)
 
-Each policy table lists all HTS codes affected by a specific U.S. trade measure (e.g., Section 232, Reciprocal Tariff, Etc).
+Policy dimension tables are modular lookup lists designed for analytical filtering.  
+They are populated separately (outside the Census ingestion flow) and joined to the HTS dictionary during analysis.
 
-They are designed for **filtering and policy segmentation**.
+**Examples:**  
+- `dim_sec232_vehicle_bus` — Section 232: Heavy & Medium-Duty Vehicles  
+- `dim_reciprocal_tariff` — Reciprocal Tariff (Annex II & III)  
+- `dim_critical_minerals` — Critical Minerals List
 
-**Key Relationship:**
-- `fact_imp_val2.HTS10` → `dim_hts_all.HTS10` (1️⃣:1️⃣)  
-- `dim_hts_all.HTS10` → `dim_sec232.HTS10` (1️⃣:many)  
-- `dim_hts_all.HTS10` → `dim_reciprocal.HTS10` (1️⃣:many)
 
-Thus, the relationship between the fact table and each policy dimension is effectively **one-to-many**,  
-since one HTS10 can belong to one or more policy categories, but each policy entry references a single HTS code.
-
----
-
-### 🧠 Example Policy Dimensions
-
-| Policy Dimension | Description | Key Field | Relationship Type |
-|------------------|--------------|------------|--------------------|
-| `dim_sec232_iron_steel` | Section 232 – Iron & Steel | `HTS` | 1–many from `dim_hts_all` |
-| `dim_sec232_vehicle_bus` | Section 232 – Heavy & Medium-Duty Vehicles & Buses | `HTS` | 1–many from `dim_hts_all` |
-| `dim_reciprocal_tariff` | Reciprocal Tariff (Annex II & III) | `HTS` | 1–many from `dim_hts_all` |
-| `dim_critical_minerals` | Critical Mineral List (U.S. strategy classification) | `HTS` | 1–many from `dim_hts_all` |
-
----
-
-### 🧩 Relationship Structure (Simplified View)
-
-```mermaid
-flowchart LR
-    F["Fact_Import_Value (HTS10, Country, Year, Month, Value)"]
-    D["dim_hts_all (HTS10 → HTS8–HTS2, Descriptions)"]
-    P1["dim_sec232_iron_steel"]
-    P2["dim_sec232_vehicle_bus"]
-    P3["dim_reciprocal_tariff"]
-
-    F --> D
-    D --> P1
-    D --> P2
-    D --> P3
