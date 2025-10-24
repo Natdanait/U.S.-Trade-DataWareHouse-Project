@@ -52,10 +52,9 @@ It also stores the corresponding product descriptions at each level.
 
 ### 🔸 Policy Dimension Tables
 
-While originally referred to as *bridge tables*, these structures function as **policy-specific dimension tables**.  
-Each policy table lists all HTS codes affected by a specific U.S. trade measure (e.g., Section 232, Reciprocal Tariff, Critical Minerals).
+Each policy table lists all HTS codes affected by a specific U.S. trade measure (e.g., Section 232, Reciprocal Tariff, Etc).
 
-They are designed for **filtering and policy segmentation**, not for resolving many-to-many relationships.
+They are designed for **filtering and policy segmentation**.
 
 **Key Relationship:**
 - `fact_imp_val2.HTS10` → `dim_hts_all.HTS10` (1️⃣:1️⃣)  
