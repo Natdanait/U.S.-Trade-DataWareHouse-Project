@@ -2,77 +2,80 @@
 
 ## 1️⃣ Executive Summary & Core Objectives
 
-This architecture establishes a scalable platform for **U.S. trade analysis**, leveraging official monthly data from the **U.S. Census Bureau (FT900 series)**.  
-The entire pipeline runs within the **Google Cloud Platform (GCP)**, orchestrated in **Google Colaboratory**, with data stored and analyzed in **Google BigQuery**.
+The **U.S. Trade Data Warehouse Project** establishes a unified, scalable platform for advanced analysis of U.S. international trade flows, leveraging official monthly data from the **U.S. Census Bureau (FT900 series)**.  
+The system is hosted on **Google BigQuery**, with pipeline orchestration managed by **Google Colaboratory** scripts.
 
 ### Core Objectives
-- **Scalable Consolidation:** Leverages BigQuery’s native processing power to efficiently consolidate large monthly Census datasets into annual staging tables.  
-- **Data Traceability:** Maintains full lineage from immutable Parquet files in GCS to final analytical outputs.  
-- **Policy Segmentation:** Uses modular Policy Dimension Tables to support flexible, non-exclusive filtering of trade data.  
-- **Performance:** Optimizes BigQuery Fact Tables with partitioning and clustering for high-speed BI and analytical queries.
+- **Scalable Consolidation:** Utilizes BigQuery native SQL to efficiently consolidate multiple years and months of raw Parquet data stored in GCS.  
+- **Data Traceability:** Ensures immutability of the Raw Layer and full lineage from source files to final Fact Tables.  
+- **Policy Segmentation:** Implements modular Policy Dimension Tables to support flexible, non-exclusive filtering of trade data.  
+- **Performance:** Optimizes the final Fact Table using BigQuery partitioning and clustering for high-speed BI and analytical queries.
 
 ---
 
 ## 2️⃣ Layered Data Management & ELT Workflow
 
-The pipeline follows a **three-layered ELT structure**, with most transformation (T) logic executed directly in BigQuery.
+The process follows an **ELT (Extract, Load, Transform)** pattern, optimized by shifting heavy consolidation and transformation (T) to the BigQuery engine.
 
-| **Layer** | **Storage Location** | **Key Process (Engine)** | **Purpose / Granularity** |
-|:-----------|:--------------------|:--------------------------|:---------------------------|
-| 🟢 **Raw (Landing)** | ☁️ GCS (Parquet) | **Load (Colab / PyArrow):** Colab scripts pull monthly Census data and write uncleaned Parquet files directly to GCS. | Immutable source backup preserving the original Census file structure. |
-| 🟡 **Staging** | 🗄️ BigQuery | **Consolidation & Cleaning (SQL):** BigQuery queries GCS via External Tables, type-casts, cleans, and consolidates all monthly data for a given year (e.g., `trade_import_2025`). | Clean, validated, year-consolidated data ready for dimensional joins. |
-| 🔵 **Warehouse** | 🗂️ BigQuery | **Star Schema Creation (SQL):** Performs final JOINs and DML operations to populate Fact and Dimension tables. | Optimized for BI queries using a Star Schema model. |
-
-**Key Advantage:**  
-Using **PyArrow** and **Parquet** enables efficient columnar reads/writes in Colab, greatly accelerating Load and Transform phases.
+| **Layer** | **Storage Location** | **Key Process (Engine Used)** | **Data Granularity & Purpose** |
+|:-----------|:--------------------|:------------------------------|:-------------------------------|
+| 🟢 **Raw (Landing)** | ☁️ GCS (Parquet) | **Load (Colab / PyArrow):** Colab script pulls Census data and writes raw, uncleaned monthly files directly to GCS. | **Immutability:** Serves as the permanent, auditable source backup. |
+| 🟡 **Staging** | 🗄️ BigQuery (External Table) | **Consolidation (BigQuery SQL):** Creates a single virtual table spanning multiple years by referencing all monthly Parquet files in GCS. No transformations are applied. | **Unified Query Scope:** Provides one consolidated endpoint for all historical raw data. |
+| 🔵 **Warehouse** | 🗂️ BigQuery (Fact Table) | **Transformation (BigQuery SQL):** Performs all cleaning, type casting, date construction, and dimensional lookups. | **Optimized for BI queries:** Final Star Schema model. |
 
 ---
 
-## 3️⃣ Raw Data Structure & Staging Requirements
+## 3️⃣ Raw Data Structure & Transformation Requirements
 
-Raw data ingested from the Census Bureau (stored as Parquet in GCS) requires casting and cleaning in the Staging Layer before use.
+The data ingested from the Census Bureau is stored in the Raw Layer with structural issues that must be resolved during the Warehouse Load phase.
 
-| **Field Name** | **Raw Type** | **Key Role** | **Required Staging Transformation** |
-|:----------------|:-------------|:--------------|:------------------------------------|
-| `GEN_VAL_MO` | STRING | Primary Measure (Fact) | CAST to `BIGNUMERIC` for calculation accuracy. |
-| `I_COMMODITY` | STRING | HTS10 Product Key | `TRIM()` to ensure clean join key. |
-| `CTY_CODE` | STRING | Country Key | `TRIM()` to ensure clean join key. |
-| `YEAR`, `MONTH` | STRING | Time Key Components | CAST to `INT64` and combine into `reporting_date`. |
-| `CTY_NAME` | STRING | Descriptive Attribute | Pass-through. |
-| `I_COMMODITY_LDESC` | STRING | Descriptive Attribute | Pass-through. |
+| **Field Name** | **Type (Raw Schema)** | **Key Role** | **Required Transformation in Warehouse Load** |
+|:----------------|:----------------------|:--------------|:----------------------------------------------|
+| `GEN_VAL_MO` | STRING | Primary Measure (Fact) | **CAST** to `BIGNUMERIC` (data arrives as strings; numeric precision required). |
+| `YEAR`, `MONTH` | STRING | Time Key Components | **CAST** to `INT64` and combine into a single field (`reporting_date`). |
+| `I_COMMODITY` | STRING | HTS10 Product Key | **TRIM()** to ensure clean join key against dimensions. |
+| `CTY_CODE` | STRING | Country Key | **TRIM()** to ensure clean join key against dimensions. |
 
 ---
 
 ## 4️⃣ Star Schema Design
 
-The warehouse adopts a **Star Schema** model optimized for analytical queries in BigQuery and Power BI.
-
 ### 🔹 HTS Dictionary Dimension (`dim_hts_all`)
-The **HTS Dictionary Table** is the central conformed dimension linking trade values to product and policy context.  
-It maps granular 10-digit HTS codes to higher-level classifications (8-, 6-, 4-, and 2-digit) and stores corresponding descriptions.
+This dimension is the central conformed bridge that maps granular `HTS10` codes from the Fact Table to higher-level classifications (8-, 6-, 4-, and 2-digit).  
+It also acts as the point of connection for policy segmentation.
 
-**Role:** Acts as the bridge key allowing the Fact Table (containing HTS10 codes) to be segmented by multiple external Policy Dimension tables.
-
----
-
-### 🟢 Policy Dimension Tables (The Filters)
-Policy tables are static, external lookup lists that segment HTS codes according to U.S. trade measures.
-
-| **Table Name** | **Policy Category** | **Relationship Type** | **Optimization** |
-|:----------------|:--------------------|:-----------------------|:-----------------|
-| `dim_sec232_iron_steel` | Section 232 – Iron & Steel | One-to-Many via `dim_hts_all` | Clustered by `HTS10` for semi-join efficiency |
-| `dim_sec232_vehicle_bus` | Section 232 – Heavy & Medium-Duty Vehicles & Buses | One-to-Many via `dim_hts_all` | Clustered by `HTS10` |
-| `dim_reciprocal_tariff` | Reciprocal Tariff (Annex II & III) | One-to-Many via `dim_hts_all` | Clustered by `HTS10` |
-| `dim_critical_minerals` | Critical Minerals List | One-to-Many via `dim_hts_all` | Clustered by `HTS10` |
+**Role:** Enables flexible product roll-up and serves as the key link to all policy definitions.
 
 ---
 
-### 🔁 Data Flow Sequence
+### 🟢 Policy Dimension Tables
+Policy tables are external, modular lookup lists used for analytical filtering based on specific U.S. trade measures (e.g., *Section 232*, *Critical Minerals*).
+
+**Separation Principle:**  
+Each major policy resides in its own dimension table (e.g., `dim_sec232_iron_steel`) because one HTS10 code can link to multiple, non-exclusive policy measures simultaneously.
+
+**Optimization:**  
+All policy dimensions are **clustered by `HTS10`** in BigQuery to maximize join and filtering efficiency.
+
+---
+
+### 🎯 Warehouse Fact Table (`import.fact_imp_val2`)
+
+The final, permanent analytical table populated only after all cleaning and dimensional lookups are complete.
+
+- **Partitioning:** by time (`reporting_date`) to optimize historical range queries.  
+- **Clustering:** by main dimension keys (`HTS_Key`, `Country_Key`) to accelerate BI joins.  
+- **Structure:** conforms to the Star Schema — joined with `dim_hts_all`, `dim_country`, and relevant policy dimensions.
+
+---
+
+### 🔁 Relationship Overview
 
 ```mermaid
 flowchart LR
-    A["Census Monthly Files"] --> B["Colab Load → GCS (Parquet)"]
-    B --> C["BigQuery External Table"]
-    C --> D["Staging (Clean & Consolidate)"]
-    D --> E["Warehouse Fact Table (import.fact_imp_val2)"]
-    E --> F["Power BI / Policy Dashboards"]
+    F["Fact Table (import.fact_imp_val2)"]
+    D["HTS Dictionary (dim_hts_all)"]
+    P["Policy Dimensions (e.g., dim_sec232_iron_steel, dim_critical_minerals)"]
+
+    F --> D
+    D --> P
