@@ -103,7 +103,7 @@ Together, these features form a **scalable and modular architecture** that grows
 
 ## 🧾 Data Dictionary (Aligned with Fact Tables)
 
-> 🔗 See [**Data\_Dictionary.md**](https://www.google.com/search?q=Data_Dictionary.md)
+> 🔗 See [**Data\_Dictionary.md**](Data_Dictionary.md)
 
 | Field | Description | Type | Fact Table Usage |
 | :--- | :--- | :--- | :--- |
