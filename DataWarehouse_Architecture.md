@@ -2,7 +2,7 @@
 
 ## 1️⃣ Executive Summary & Core Objectives
 
-The **U.S. Trade Data Warehouse Project** establishes a unified, scalable platform for advanced analysis of U.S. international trade flows, leveraging official monthly data from the **U.S. Census Bureau (FT900 series)**.  
+The **U.S. Trade Data Warehouse Project** establishes a unified, scalable platform for advanced analysis of U.S. international trade flows, leveraging official monthly data from the **U.S. Census Bureau **.  
 The system is hosted on **Google BigQuery**, with pipeline orchestration managed by **Google Colaboratory** scripts.
 
 ### Core Objectives
