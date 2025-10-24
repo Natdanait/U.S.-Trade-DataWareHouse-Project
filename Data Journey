@@ -10,7 +10,7 @@ It connects the entire process — from **raw data collection** to **interactive
 
 Each dataset remains **traceable to its original source** for validation and audit, ensuring transparency and consistency across all analyses.
 
-For a visual overview of the process, see the [Data Pipeline Diagram](../diagrams/Data%20pipeline%20Diagram.drawio.png).
+For a visual overview of the process, see the [Data Pipeline Diagram](https://github.com/Natdanait/U.S.-Trade-DataWareHouse-Project/blob/main/Diagrams/Data%20pipeline%20Diagram.drawio.png).
 
 In short, the Data Journey shows how **raw trade data becomes structured insights** —  
 supporting accurate, transparent, and timely trade-policy analysis.
