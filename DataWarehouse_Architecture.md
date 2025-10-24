@@ -1,0 +1,58 @@
+# 🧱 U.S. Trade Data Warehouse Architecture (Colab-Driven ELT)
+
+## 1️⃣ Executive Summary & Core Objectives
+
+This architecture establishes a scalable platform for U.S. trade analysis, leveraging official monthly data from the **U.S. Census Bureau**.  
+The entire pipeline operates within the **Google Cloud Platform (GCP)**, utilizing **Google Colaboratory** as the primary orchestration and transformation engine, with data stored and analyzed in **Google BigQuery**.
+
+### Pipeline Flow
+1. **Extract (E):** Data pulled directly from Census sources within a Colab notebook.  
+2. **Load (L):** Raw data saved as Parquet files to **Google Cloud Storage (GCS)**.  
+3. **Transform (T):** Colab/Pandas/PyArrow scripts perform cleaning and staging, followed by final loading into BigQuery Fact Tables.
+
+---
+
+## 2️⃣ Layered Data Management & Colab Workflow
+
+The pipeline follows a three-layered data structure, with Colab notebooks driving each transformation step.
+
+| Layer | Storage Location | Key Process | Purpose |
+|--------|------------------|--------------|----------|
+| **Raw (Landing)** | GCS (Parquet) | Data ingestion from Census files; minimal formatting with PyArrow. | Immutable raw source backup. |
+| **Staging** | BigQuery | Colab reads from GCS, cleans, and consolidates all monthly files for a year into a staging table (e.g., `trade_import_2025`). | Year-level consolidation and validation. |
+| **Warehouse** | BigQuery | Colab joins staging data with dimensions and loads it into permanent, partitioned fact tables. | Optimized for BI queries using a Star Schema. |
+
+**Key advantage:**  
+Using **PyArrow** and **Parquet** allows efficient columnar reads/writes in Colab, accelerating Load and Transform phases.
+
+---
+
+## 3️⃣ Schema Design and Data Flow
+
+### 🔹 HTS Dictionary Dimension (`dim_hts_all`)
+
+This table forms the backbone of the product hierarchy, mapping granular 10-digit HTS codes to higher-level classifications (8-, 6-, 4-, and 2-digit).  
+It acts as the **central bridge key** linking the Fact Table (trade values) to the Policy Dimension Tables (policy lists).
+
+---
+
+### 🟢 Policy Dimension Tables (Filters)
+
+Policy dimension tables are modular lookup lists designed for analytical filtering.  
+They are populated separately (outside the Census ingestion flow) and joined to the HTS dictionary during analysis.
+
+**Examples:**  
+- `dim_sec232_vehicle_bus` — Section 232: Heavy & Medium-Duty Vehicles  
+- `dim_reciprocal_tariff` — Reciprocal Tariff (Annex II & III)  
+- `dim_critical_minerals` — Critical Minerals List
+
+---
+
+### 🔁 Data Flow Sequence
+
+```mermaid
+flowchart TD
+    A["Monthly Census Data"] --> B["GCS Raw Layer (Parquet)"]
+    B --> C["Colab Clean & Consolidate → BigQuery Staging"]
+    C --> D["Colab Join & Load → Warehouse Fact Table"]
+    D --> E["Power BI / Dashboard Layer"]
