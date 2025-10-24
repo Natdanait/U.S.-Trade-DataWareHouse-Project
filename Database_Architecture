@@ -16,11 +16,12 @@ The entire pipeline operates within the **Google Cloud Platform (GCP)**, utilizi
 
 The pipeline follows a three-layered data structure, with Colab notebooks driving each transformation step.
 
-| Layer | Storage Location | Key Process | Purpose |
-|--------|------------------|--------------|----------|
-| **Raw (Landing)** | GCS (Parquet) | Data ingestion from Census files; minimal formatting with PyArrow. | Immutable raw source backup. |
-| **Staging** | BigQuery | Colab reads from GCS, cleans, and consolidates all monthly files for a year into a staging table (e.g., `trade_import_2025`). | Year-level consolidation and validation. |
-| **Warehouse** | BigQuery | Colab joins staging data with dimensions and loads it into permanent, partitioned fact tables. | Optimized for BI queries using a Star Schema. |
+| **Layer** | **Storage Location** | **Key Process (Colab Step)** | **Purpose / Granularity** |
+|:-----------|:--------------------|:-----------------------------|:---------------------------|
+| 🟢 **Raw (Landing)** | ☁️ GCS (Parquet) | Data ingestion from Census files via PyArrow; minimal formatting only. | Immutable raw backup of monthly data. |
+| 🟡 **Staging** | 🗄️ BigQuery | Colab reads from GCS, cleans, and consolidates all monthly files for a year into a temporary staging table (`trade_import_2025`). | Validated and consolidated yearly data. |
+| 🔵 **Warehouse** | 🗂️ BigQuery | Colab joins staging data with dimensions (`dim_hts_all`, `dim_country`, etc.) and loads into permanent, partitioned fact tables. | Optimized star-schema dataset for BI analysis. |
+
 
 **Key advantage:**  
 Using **PyArrow** and **Parquet** allows efficient columnar reads/writes in Colab, accelerating Load and Transform phases.
