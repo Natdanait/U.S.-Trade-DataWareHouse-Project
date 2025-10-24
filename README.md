@@ -69,7 +69,8 @@ Together, these features form a **scalable and modular architecture** that grows
 
 ## 🧱 Database Architecture
 
-> 🔗 See [**DataWarehouse\_Architecture.md**](https://www.google.com/search?q=DataWarehouse_Architecture.md)
+> 🔗 See [U.S. Trade Data Warehouse Architecture](https://github.com/Natdanait/U.S.-Trade-DataWareHouse-Project/blob/670d17acf65b32cbda59fa8543033871b20e5950/DataWarehouse_Architecture.md)
+
 
 **Core Components**
 
