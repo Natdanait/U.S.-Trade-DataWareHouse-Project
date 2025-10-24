@@ -1,4 +1,4 @@
-# U.S. Trade Data Architecture & Analytics
+# U.S. Trade Data Warehouse Project
 
 This repository presents the **data foundation** for analyzing the international trade of the **United States**.  
 It integrates official U.S. trade data and policy references into a single analytical environment — designed for trade analysts, researchers, and policymakers who seek to understand trade trends, performance, and policy impacts clearly and efficiently.
@@ -46,7 +46,8 @@ Together, these features form a **scalable and modular architecture** that grows
 
 ## 🧭 Data Journey
 
-> 🔗 See [`docs/01_data_journey.md`](docs/01_data_journey.md)
+🔗 See [Full Data Journey Document](https://github.com/NatdanaiTapanwong/U.S.-Trade-DataWareHouse-Project/blob/main/docs/01_data_journey.md)
+
 
 | Stage | Description |
 |-------|--------------|
