@@ -46,9 +46,6 @@ Together, these features form a **scalable and modular architecture** that grows
 
 ## 🧭 Data Journey
 
-🔗 See [Full Data Journey Document](https://github.com/Natdanait/U.S.-Trade-DataWareHouse-Project/blob/main/Data%20Journey)
-
-
 | Stage | Description |
 |-------|--------------|
 | **1. Data Source** | Monthly import/export data from the **U.S. Census Bureau** |
