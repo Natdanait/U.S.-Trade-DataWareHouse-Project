@@ -46,7 +46,7 @@ Together, these features form a **scalable and modular architecture** that grows
 
 ## 🧭 Data Journey
 
-🔗 See [Full Data Journey Document](https://github.com/NatdanaiTapanwong/U.S.-Trade-DataWareHouse-Project/blob/main/docs/01_data_journey.md)
+🔗 See [Full Data Journey Document](https://github.com/Natdanait/U.S.-Trade-DataWareHouse-Project/blob/main/Data%20Journey)
 
 
 | Stage | Description |
