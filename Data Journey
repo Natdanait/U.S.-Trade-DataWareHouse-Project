@@ -1,0 +1,17 @@
+# 🧭 Data Journey
+
+The **U.S. Trade Data Warehouse Project** integrates official U.S. trade data from multiple sources into one analytical flow.  
+It connects the entire process — from **raw data collection** to **interactive policy dashboards** — to support consistent and policy-driven trade analysis.
+
+### 🔹 Overview
+- **Source:** Monthly import and export data from the **U.S. Census Bureau** and **USITC**, organized by country and HTS 10-digit product codes.  
+- **Storage & Processing:** Data is uploaded to **Google Cloud Storage (GCS)** and processed in **BigQuery**, where it is cleaned, standardized, and linked with policy datasets such as *Section 232* and *Reciprocal Tariff lists*.  
+- **Output:** The final datasets feed directly into **Power BI dashboards**, allowing trade analysts to explore trends, evaluate policy impacts, and visualize results at both product and country levels.
+
+Each dataset remains **traceable to its original source** for validation and audit, ensuring transparency and consistency across all analyses.
+
+For a visual overview of the process, see the [Data Pipeline Diagram](../diagrams/Data%20pipeline%20Diagram.drawio.png).
+
+In short, the Data Journey shows how **raw trade data becomes structured insights** —  
+supporting accurate, transparent, and timely trade-policy analysis.
+
